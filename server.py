@@ -1,14 +1,27 @@
-"""电脑伴侣启动入口。"""
+"""电脑伴侣启动入口。
+
+用法：
+    python server.py             # 默认：打开图形控制面板（Tkinter + 系统托盘）
+    python server.py --gui       # 强制图形控制面板
+    python server.py --console   # 传统命令行黑窗口模式（保留）
+
+图形面板可在托盘持续后台运行，并提供二维码/配对码/网页控制台入口。
+"""
+import argparse
+import sys
+
 from http.server import ThreadingHTTPServer
+
 from companion.config import settings
 from companion.http_api import CompanionHandler, local_lan_ip
 from companion.qr_text import qr_payload, qr_terminal_text
 
 
-def main():
+def run_console() -> None:
+    """传统命令行模式：打印信息并在前台 serve_forever。"""
     address = (settings.host, settings.port)
     server = ThreadingHTTPServer(address, CompanionHandler)
-    print("电脑伴侣模块化版（安全配对试运行）已启动")
+    print("电脑伴侣 已启动（命令行模式）")
     print(f"本机访问：http://127.0.0.1:{settings.port}")
     ip = local_lan_ip()
     print(f"手机访问：http://{ip}:{settings.port}  (电脑的 WLAN IPv4 地址)")
@@ -28,6 +41,32 @@ def main():
         print("正在停止电脑伴侣……")
     finally:
         server.server_close()
+
+
+def run_gui() -> None:
+    """图形控制面板模式（Tkinter + 系统托盘）。服务在前台面板线程内运行。"""
+    from companion.gui import main as gui_main
+    raise SystemExit(gui_main())
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="电脑伴侣 · 电脑端入口")
+    parser.add_argument(
+        "--console", action="store_true",
+        help="使用传统命令行黑窗口模式（默认是图形面板）",
+    )
+    parser.add_argument(
+        "--gui", action="store_true",
+        help="强制使用图形控制面板模式",
+    )
+    args = parser.parse_args()
+
+    use_gui = args.gui or not args.console
+    if use_gui:
+        run_gui()
+    else:
+        run_console()
+
 
 if __name__ == "__main__":
     main()

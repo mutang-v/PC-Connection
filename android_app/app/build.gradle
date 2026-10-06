@@ -2,6 +2,13 @@ plugins {
     id 'com.android.application'
 }
 
+// 读取上架签名配置（keystore.properties 不入库，需自行保管）
+def keystoreProps = new Properties()
+def keystorePropsFile = rootProject.file('keystore.properties')
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
 android {
     namespace 'com.pccompanion.assistant'
     compileSdk 36
@@ -9,15 +16,28 @@ android {
     defaultConfig {
         applicationId "com.pccompanion.assistant"
         minSdk 24          // 覆盖 Android 7+，P9 是 Android 8 (API 26)
-        targetSdk 26       // 保持与 P9 系统匹配，避免高版本 targetSdk 兼容限制
-        versionCode 1
-        versionName "1.0.0"
+        targetSdk 34       // 上架各商店（应用宝/华为/酷安/Google Play）的当前必需 targetSdk；
+                           // 对 P9(API26) 无运行时影响，仅决定高版本系统上的兼容行为
+        versionCode 2
+        versionName "1.1.0"
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePropsFile.exists()) {
+                storeFile rootProject.file(keystoreProps['RELEASE_STORE_FILE'])
+                storePassword keystoreProps['RELEASE_STORE_PASSWORD']
+                keyAlias keystoreProps['RELEASE_KEY_ALIAS']
+                keyPassword keystoreProps['RELEASE_KEY_PASSWORD']
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 

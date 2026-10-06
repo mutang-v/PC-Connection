@@ -19,6 +19,7 @@ android_app/.idea/
 android_app/*.iml
 *.keystore
 *.jks
+android_app/keystore.properties    # 上架签名密码（含敏感信息），勿提交
 
 # ===== 运行时 / 敏感数据（切勿提交） =====
 data/
