@@ -1,1 +1,5 @@
+# 电脑伴侣 PC Connection 后端依赖
+# 运行：pip install -r requirements.txt
 psutil>=5.9,<8
+qrcode>=7.4,<9
+Pillow>=9.0,<12
