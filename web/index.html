@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#060b16">
+<title>电脑伴侣 · 稳定版 v5.3</title>
+<style>
+:root{color-scheme:dark;--bg:#060b16;--panel:#0d1729;--line:#203453;--muted:#8ca2c4;--blue:#4f8cff;--cyan:#34d9e4;--green:#47e1a1;--orange:#ffbd69;--red:#ff667f}
+*{box-sizing:border-box}html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:#edf4ff;font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif}body{background:radial-gradient(ellipse at 50% -20%,#18315a 0%,#091326 48%,#050912 100%);overflow-x:hidden}
+.app{min-height:100dvh;padding:clamp(9px,1.7vw,20px);display:flex;flex-direction:column;gap:clamp(7px,1.1vw,12px);max-width:1500px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:10px}.brand{display:flex;align-items:center;gap:10px}.orb{width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 18px #34d9e488;flex-shrink:0}h1{font-size:clamp(16px,2.2vw,27px);margin:0;font-weight:750;letter-spacing:.05em}.host{font-size:11px;color:var(--muted);margin-top:4px}.status{border:1px solid #2c4b67;background:#0b1a2a;border-radius:999px;padding:6px 10px;font-size:11px;color:var(--green);white-space:nowrap}.status.off{color:var(--red)}.clockrow{display:flex;align-items:baseline;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px}.clock{font-size:clamp(16px,2vw,24px);font-variant-numeric:tabular-nums;color:#dceaff;letter-spacing:.06em}
+.grid{flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,minmax(115px,1fr));gap:clamp(7px,1.2vw,13px)}.card{position:relative;overflow:hidden;min-width:0;background:linear-gradient(145deg,rgba(17,32,56,.96),rgba(9,19,35,.98));border:1px solid var(--line);border-radius:clamp(11px,1.5vw,18px);padding:clamp(10px,1.8vw,20px);display:flex;flex-direction:column;justify-content:center;box-shadow:0 10px 30px #0003}.card:after{content:"";position:absolute;top:0;left:0;width:42%;height:2px;background:linear-gradient(90deg,var(--blue),transparent)}.label{font-size:clamp(11px,1.2vw,14px);color:#9db1d1;font-weight:650}.value{font-size:clamp(29px,5vw,62px);font-weight:760;letter-spacing:-.055em;line-height:1.08;margin:clamp(7px,1.2vw,14px) 0 7px;font-variant-numeric:tabular-nums;white-space:nowrap}.unit{font-size:.35em;color:#9eb2d0;letter-spacing:0;margin-left:4px;font-weight:550}.detail{font-size:clamp(10px,1vw,12px);color:var(--muted);line-height:1.5}.track{height:5px;background:#1d2e49;border-radius:99px;margin:8px 0 9px;overflow:hidden}.fill{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:99px;transition:width .5s}.fill.warn{background:linear-gradient(90deg,var(--orange),var(--red))}.network{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}.netvalue{font-size:clamp(22px,3.2vw,40px);font-weight:730;letter-spacing:-.04em;white-space:nowrap}.netlabel{font-size:11px;color:var(--muted);margin-bottom:5px}.foot{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:10px;color:#647b9e}.pulse{color:var(--cyan)}
+.actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.action{min-width:0;background:linear-gradient(135deg,#0d2c69,#10214a);border:1px solid #2858a8;color:#dceaff;border-radius:12px;padding:10px 8px;font:600 clamp(11px,1.15vw,14px) system-ui,"Microsoft YaHei",sans-serif;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;min-height:42px}.action:active{transform:scale(.985)}.action.cyan{background:linear-gradient(135deg,#063c4b,#0a293b);border-color:#14798b}.action.purple{background:linear-gradient(135deg,#30125e,#1b2049);border-color:#6848a9}.action.green{background:linear-gradient(135deg,#064c46,#0a293b);border-color:#1b8e7b}.action:disabled{opacity:.55}
+@media(orientation:portrait){.app{min-height:100dvh}.grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(120px,1fr))}.value{font-size:clamp(30px,8vw,47px)}.wide{grid-column:span 2}.actions{grid-template-columns:repeat(2,minmax(0,1fr))}.foot{font-size:9px}}
+@media(orientation:landscape) and (max-height:560px){.app{padding:7px 10px;gap:6px}.top{min-height:27px}.grid{grid-template-rows:repeat(2,minmax(74px,1fr));gap:7px}.card{padding:8px 12px}.value{font-size:clamp(23px,4.5vh,39px);margin:5px 0}.track{margin:4px 0}.clockrow{font-size:10px}.clock{font-size:15px}.network{margin-top:3px}.netvalue{font-size:clamp(19px,3.8vh,28px)}.actions{gap:6px}.action{padding:7px 5px;min-height:34px}.foot{font-size:9px}}
+
+/* v4 visual refresh: monochrome base, high-contrast accents */
+:root{color-scheme:dark;--bg:#08090b;--panel:#121418;--line:#2b2f36;--muted:#a2a7b0;--blue:#6ea2ff;--cyan:#37e0d0;--green:#9be36d;--orange:#ffbf69;--red:#ff6b83}
+html,body{background:#08090b;color:#f5f6f8}body{background:radial-gradient(ellipse at 50% -30%,#20242b 0%,#101114 40%,#08090b 100%)}
+.app{max-width:1440px;padding:clamp(12px,2vw,24px);gap:clamp(10px,1.4vw,16px)}
+.orb{background:#fff;box-shadow:0 0 0 5px #ffffff13,0 0 20px #ffffff44}.host{color:#a0a4ad}.status{background:#17191e;border-color:#343840;color:var(--green)}.status.off{color:var(--red)}
+.tabs{gap:8px}.tab{background:#111317;border-color:#30343b;color:#aeb3bc;border-radius:12px;padding:12px 8px;transition:all .16s}.tab.active{background:#f2f3f5;color:#090a0c;border-color:#f2f3f5;box-shadow:0 5px 20px #ffffff12}
+.card,.panel{background:linear-gradient(145deg,#15171b,#101114);border-color:#2a2d34;box-shadow:0 12px 32px #0005}.card:after{background:linear-gradient(90deg,#fff,var(--cyan),transparent);height:2px}.label{color:#c7cbd2}.value{color:#fafafa}.unit,.detail,.subtext{color:#9ea4ae}.track{background:#292d34}.fill{background:linear-gradient(90deg,#fff,var(--cyan));}.fill.warn{background:linear-gradient(90deg,var(--orange),var(--red))}
+.mini{background:#0c0d10;border-color:#2b2f36}.minivalue{color:#f7f8fa}.action{background:#17191e;border:1px solid #3b4048;color:#f5f6f8;border-radius:12px;transition:transform .12s,border-color .12s,background .12s}.action:hover{border-color:#f5f6f8}.action:active{transform:scale(.985)}.action.cyan{background:#0c2827;border-color:#237e76;color:#aafff5}.action.purple{background:#21172c;border-color:#7856a5;color:#e8d6ff}.action.green{background:#172414;border-color:#5d8f42;color:#c8ffab}.action:disabled{opacity:.55}
+.herohead{display:flex;align-items:center;justify-content:space-between;gap:16px}.eyebrow{font-size:10px;font-weight:800;letter-spacing:.18em;color:var(--cyan);margin-bottom:7px}.heroicon{display:flex;align-items:center;justify-content:center;width:52px;height:52px;flex:0 0 auto;border:1px solid #515760;border-radius:16px;color:#fff;font-size:26px;background:linear-gradient(145deg,#202329,#101114)}
+
+
+/* v5.2: reliable page visibility and matte monochrome cards */
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+.tab{min-width:0;appearance:none;font:600 clamp(11px,1.2vw,14px) system-ui,"Microsoft YaHei",sans-serif;cursor:pointer}
+.page{display:none;min-width:0;width:100%}
+.page.active{display:block}
+.page[hidden],[hidden]{display:none!important}
+.card:after{display:none!important;content:none!important}
+.heroicon{background:#17191e!important;box-shadow:none!important}
+.tab:focus-visible,.action:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+@media(max-width:360px){.tab{padding:10px 4px;font-size:11px}}
+
+/* v5.1: visible build marker and rolling usage history */
+.version-badge{display:inline-flex;vertical-align:middle;align-items:center;margin-left:7px;padding:3px 6px;border:1px solid #555b64;border-radius:6px;font-size:10px;letter-spacing:.08em;color:#f4f6f8;background:#202329}
+.trend-panel{margin-top:10px;padding:12px 14px;border:1px solid #2b2f36;border-radius:14px;background:linear-gradient(145deg,#15171b,#101114)}
+.trend-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.trend-legend{display:flex;gap:12px;font-size:11px;color:#bfc4cc}.trend-legend span{display:flex;align-items:center;gap:5px}.legend-dot{display:inline-block;width:7px;height:7px;border-radius:50%}.cpu-dot{background:#37e0d0}.mem-dot{background:#f5f6f8}.trend-svg{display:block;width:100%;height:76px;margin-top:5px;overflow:visible}.trend-gridline{stroke:#333840;stroke-width:.7;stroke-dasharray:2 3}.trend-line{fill:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}.cpu-line{stroke:#37e0d0}.mem-line{stroke:#f5f6f8}.trend-scale{display:flex;justify-content:space-between;color:#858b95;font-size:9px}
+@media(orientation:landscape) and (max-height:560px){.trend-panel{margin-top:5px;padding:6px 10px}.trend-svg{height:38px;margin-top:2px}.trend-head .subtext{display:none}}
+
+/* v5.3: 电池/告警/媒体音量/剪贴板/通知/结束进程 扩展样式 */
+.alertbanner{display:flex;flex-direction:column;gap:6px;padding:10px 14px;border:1px solid #3a3224;border-radius:12px;background:linear-gradient(145deg,#1c1913,#121413);margin-top:10px}
+.alertitem{display:flex;align-items:center;gap:8px;font-size:12px;color:#ffd9a3}.alertitem::before{content:"⚠";color:var(--orange);flex-shrink:0}
+.alertitem.crit{color:#ffb0bb}.alertitem.crit::before{content:"⛔";color:var(--red)}
+.alert-none{color:var(--green);font-size:12px}
+.batchip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:1px solid var(--line);border-radius:999px;font-size:11px}
+.batchip.on{color:#37e0d0;border-color:#2a6b66}.batchip.low{color:var(--orange);border-color:#7a5a20}
+.mini3{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.volrow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.volrow input[type=range]{flex:1;min-width:120px;accent-color:var(--cyan);height:22px}
+.volbtns{display:flex;gap:6px;flex-wrap:wrap}
+.chipbtn{min-width:0;background:linear-gradient(135deg,#0d2c69,#10214a);border:1px solid #2858a8;color:#dceaff;border-radius:10px;padding:8px 6px;font:600 12px system-ui,"Microsoft YaHei",sans-serif;cursor:pointer;min-height:36px}
+.chipbtn.cyan{background:linear-gradient(135deg,#063c4b,#0a293b);border-color:#14798b;color:#aafff5}
+.chipbtn.purple{background:linear-gradient(135deg,#30125e,#1b2049);border-color:#6848a9;color:#e8d6ff}
+.chipbtn.green{background:linear-gradient(135deg,#064c46,#0a293b);border-color:#1b8e7b;color:#c8ffab}
+.chipbtn.red{background:linear-gradient(135deg,#5e1230,#2a1021);border-color:#a84268;color:#ffc4d4}
+.chipbtn:active{transform:scale(.985)}.chipbtn:disabled{opacity:.55}
+.tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(max-width:520px){.tools-grid{grid-template-columns:1fr}}
+.tool-group{background:linear-gradient(145deg,#15171b,#101114);border:1px solid #2b2f36;border-radius:14px;padding:12px 14px}
+.tool-group>.subtext{margin:2px 0 9px}
+.cliparea{width:100%;min-height:110px;background:#0c0d10;border:1px solid #3b4048;border-radius:10px;color:#f5f6f8;padding:9px 11px;font:12px/1.5 system-ui,"Microsoft YaHei",sans-serif;resize:vertical}
+.clipactions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.notify-form{display:flex;flex-direction:column;gap:8px}.notify-form input{background:#0c0d10;border:1px solid #3b4048;border-radius:10px;color:#f5f6f8;padding:9px 11px;font:12px system-ui,"Microsoft YaHei",sans-serif}
+.proc-kill{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 2px;border-bottom:1px dashed #2b2f36}
+.proc-kill:last-child{border-bottom:0}.proc-kill .pname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#e6e9ee}
+.proc-kill .pmeta{font-size:11px;color:var(--muted);white-space:nowrap}
+.killbtn{background:#5e1230;border:1px solid #a84268;color:#ffc4d4;border-radius:8px;padding:3px 9px;font:600 11px system-ui,"Microsoft YaHei",sans-serif;cursor:pointer;margin-left:8px;white-space:nowrap}
+.killbtn:active{transform:scale(.97)}
+.actionbar{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.sep-title{font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--cyan);margin:18px 0 8px}
+
+
+</style></head>
+<body><main class="app">
+<header class="top"><div class="brand"><span class="orb"></span><div><h1>电脑伴侣 <span class="version-badge">V5.3</span></h1><div class="host" id="host">硬件监控 · 内存整理 · 电脑工具</div></div></div><div id="status" class="status">● 正在连接</div></header>
+<nav class="tabs"><button type="button" class="tab active" data-page="monitor" aria-selected="true">硬件监控</button><button type="button" class="tab" data-page="memory" aria-selected="false">内存优化</button><button type="button" class="tab" data-page="system" aria-selected="false">电脑工具</button></nav>
+<section class="page active" id="page-monitor"><div class="clockrow"><span class="clock" id="clock">--:--:--</span><span id="updated">等待电脑数据</span></div>
+<div class="grid">
+<section class="card"><div class="label">处理器使用率</div><div class="value"><span id="cpu">--</span><span class="unit">%</span></div><div class="track"><div id="cpuBar" class="fill"></div></div><div class="detail">CPU 实时负载</div></section>
+<section class="card"><div class="label">内存使用率</div><div class="value"><span id="mem">--</span><span class="unit">%</span></div><div class="track"><div id="memBar" class="fill"></div></div><div id="memDetail" class="detail">等待内存数据</div></section>
+<section class="card"><div class="label">系统磁盘</div><div class="value"><span id="disk">--</span><span class="unit">%</span></div><div class="track"><div id="diskBar" class="fill"></div></div><div id="diskDetail" class="detail">系统盘空间占用</div></section>
+<section class="card"><div class="label">电脑运行时间</div><div class="value" id="uptime">--</div><div class="detail">自上次开机以来</div></section>
+<section class="card" id="batCard" style="display:none"><div class="label">电脑电源状态</div><div class="value" id="batPct">--<span class="unit">%</span></div><div class="detail" id="batDetail">等待电源数据</div><div class="track"><div id="batBar" class="fill"></div></div></section>
+<section class="card wide"><div class="label">网络实时流量</div><div class="network"><div><div class="netlabel">↓ 下载速度</div><div class="netvalue"><span id="rx">0.00</span><span class="unit">Mbps</span></div></div><div><div class="netlabel">↑ 上传速度</div><div class="netvalue"><span id="tx">0.00</span><span class="unit">Mbps</span></div></div></div><div class="detail">电脑所有网络接口合计 · 每 2 秒更新</div></section>
+<section class="card wide"><div class="label">系统综合状态</div><div class="value" style="font-size:clamp(22px,3.4vw,42px)" id="health">等待数据</div><div class="detail" id="healthDetail">正在读取电脑状态</div><div class="track"><div id="healthBar" class="fill"></div></div></section>
+</div>
+<div class="trend-panel panel"><div class="trend-head"><div><div class="sectiontitle" style="font-size:16px">近 60 秒使用趋势</div><div class="subtext">每 2 秒采样一次；切换页面不会停止采样</div></div><div class="trend-legend"><span><i class="legend-dot cpu-dot"></i>CPU</span><span><i class="legend-dot mem-dot"></i>内存</span></div></div><svg class="trend-svg" viewBox="0 0 300 90" preserveAspectRatio="none" role="img" aria-label="CPU 和内存使用率趋势"><line x1="4" y1="10" x2="296" y2="10" class="trend-gridline"/><line x1="4" y1="30" x2="296" y2="30" class="trend-gridline"/><line x1="4" y1="50" x2="296" y2="50" class="trend-gridline"/><line x1="4" y1="70" x2="296" y2="70" class="trend-gridline"/><polyline id="cpuTrend" class="trend-line cpu-line" points="4,86 296,86"/><polyline id="memTrend" class="trend-line mem-line" points="4,86 296,86"/></svg><div class="trend-scale"><span>60 秒前</span><span>现在</span></div></div>
+<div class="alertbanner" id="alertbanner" style="display:none"><div class="sectiontitle" style="font-size:14px">⚠ 状态告警</div><div id="alertlist"><div class="alert-none">当前无明显异常</div></div></div>
+<div class="foot"><span><span class="pulse">●</span> 本地监控 · 自动刷新</span><button class="action" id="fullscreen" style="min-height:28px;padding:4px 9px;flex:0 0 auto">全屏显示</button><span id="mode">P9 监控副屏</span></div></section>
+<section class="page" id="page-memory" hidden><div><div class="sectiontitle">内存优化</div><div class="subtext">温和整理当前用户部分普通应用的工作集；不会结束进程，也不会清理用户文件。Windows 仍会按需重新载入数据。</div></div>
+<div class="memoryhero"><div class="mini"><div class="label">当前内存使用率</div><div class="minivalue"><span id="memPagePct">--</span><span class="unit">%</span></div><div class="track"><div id="memPageBar" class="fill"></div></div></div><div class="mini"><div class="label">当前可用内存</div><div class="minivalue"><span id="memPageAvail">--</span><span class="unit">GB</span></div><div class="detail" id="memPageTotal">等待数据</div></div></div>
+<div class="panel"><div class="sectiontitle" style="font-size:17px">整理工作集</div><p class="subtext">只尝试整理当前用户、内存占用较大的普通应用工作集，并跳过 Windows 核心进程与电脑伴侣自身。它不会结束进程，但可能让相关应用短暂卡顿；实际回收量取决于系统状态。</p><p class="subtext warning">注意：这不是增加物理内存，也不保证可用内存持续增加或性能变快。建议先保存工作，并在不运行大型游戏/重要任务时尝试。</p><button class="action green" id="optimizeBtn" style="width:100%;min-height:48px">⚡ 开始温和内存整理</button><div id="optimizeResult" class="subtext" style="margin-top:12px">尚未执行优化</div></div>
+<div class="panel"><div class="sectiontitle" style="font-size:17px">内存占用较高的进程</div><div class="subtext">可点击右侧“结束”终止某个进程；系统核心进程会被后端保护并拒绝结束。结束不可撤销，请慎重操作。</div><div class="actionbar"><button class="action cyan" id="procRefreshBtn" style="min-width:90px">↻ 刷新</button><span class="subtext" id="procRefreshTime"></span></div><div id="processList" style="margin-top:8px">等待读取进程数据</div></div></section>
+<section class="page" id="page-system" hidden>
+<div><div class="sectiontitle">电脑工具</div><div class="subtext">快捷控制、媒体音量、剪贴板互通、电脑推送通知与系统面板入口。均为后端白名单内的安全操作。</div></div>
+
+<div class="sep-title">── 快捷控制 ──</div>
+<div class="tools-grid">
+  <div class="tool-group"><div class="sectiontitle" style="font-size:15px">系统面板</div><div class="subtext">在电脑上打开对应的 Windows 设置面板</div>
+    <div class="actionbar" id="sysPanelBar">
+      <button class="action purple" id="taskBtn">▣ 任务管理器</button>
+      <button class="action cyan" id="networkBtn">⌁ 网络设置</button>
+      <button class="action" id="settingsBtn">⚙ Windows 设置</button>
+      <button class="chipbtn" data-action="bluetooth_settings">⌁ 蓝牙</button>
+      <button class="chipbtn" data-action="display_settings">◧ 显示</button>
+      <button class="chipbtn" data-action="sound_settings">♪ 声音</button>
+      <button class="chipbtn" data-action="camera_settings">◉ 相机</button>
+      <button class="chipbtn" data-action="power_settings">⚡ 电源</button>
+    </div>
+  </div>
+  <div class="tool-group"><div class="sectiontitle" style="font-size:15px">屏幕与电源</div><div class="subtext">显示桌面、锁定电脑</div>
+    <div class="actionbar">
+      <button class="chipbtn" data-action="show_desktop">▦ 显示桌面</button>
+      <button class="chipbtn orange" id="lockBtn" style="background:linear-gradient(135deg,#5e1230,#2a1021);border-color:#a84268">🔒 锁定电脑</button>
+    </div>
+    <div class="subtext" style="margin-top:6px;color:#a06">电源操作（睡眠/重启/关机）需二次确认，见下方“电源安全”。</div>
+  </div>
+  <div class="tool-group"><div class="sectiontitle" style="font-size:15px">媒体控制</div><div class="subtext">控制电脑正在播放的媒体</div>
+    <div class="volbtns">
+      <button class="chipbtn cyan" data-media="play_pause">⏯ 播放/暂停</button>
+      <button class="chipbtn cyan" data-media="next">⏭ 下一曲</button>
+      <button class="chipbtn cyan" data-media="prev">⏮ 上一曲</button>
+    </div>
+  </div>
+  <div class="tool-group"><div class="sectiontitle" style="font-size:15px">音量控制</div><div class="subtext" id="volStatus">读取中…</div>
+    <div class="volrow"><input type="range" id="volRange" min="0" max="100" value="0"><span id="volPct" class="subtext">0%</span></div>
+    <div class="volbtns">
+      <button class="chipbtn" data-volume="up">＋ 增大</button>
+      <button class="chipbtn" data-volume="down">－ 减小</button>
+      <button class="chipbtn red" data-volume="mute">🔇 静音</button>
+    </div>
+  </div>
+</div>
+
+<div class="sep-title">── 剪贴板 & 通知 ──</div>
+<div class="tools-grid">
+  <div class="tool-group"><div class="sectiontitle" style="font-size:15px">剪贴板互通</div><div class="subtext">读取电脑剪贴板，或把下方内容一键写入电脑剪贴板</div>
+    <textarea class="cliparea" id="clipText" placeholder="（点击“读取电脑剪贴板”后，电脑上的剪贴板内容会显示在这里）"></textarea>
+    <div class="clipactions">
+      <button class="action cyan" id="clipReadBtn" style="min-width:110px">⇅ 读取电脑剪贴板</button>
+      <button class="action green" id="clipWriteBtn">⬇ 写入电脑剪贴板</button>
+    </div>
+  </div>
+  <div class="tool-group"><div class="sectiontitle" style="font-size:15px">电脑推送通知</div><div class="subtext">给电脑桌面发一条 Windows 通知（Toast）</div>
+    <div class="notify-form">
+      <input id="notifyTitle" placeholder="标题（如：手机提醒）" maxlength="60">
+      <input id="notifyMsg" placeholder="内容（如：记得保存文档）" maxlength="200">
+      <button class="action green" id="notifyBtn">🔔 发送到电脑桌面</button>
+    </div>
+  </div>
+</div>
+
+<div class="sep-title">── 电源安全 ──</div>
+<div class="tools-grid">
+  <div class="tool-group"><div class="sectiontitle" style="font-size:15px">电源操作</div><div class="subtext">以下操作会影响电脑状态，均需明确二次确认</div>
+    <div class="actionbar" id="powerBar">
+      <button class="chipbtn orange" data-action="system_sleep" style="background:linear-gradient(135deg,#5a3a10,#2a2010);border-color:#a87848">🌙 睡眠</button>
+      <button class="chipbtn red" data-action="system_restart">↻ 重启</button>
+      <button class="chipbtn red" data-action="system_shutdown">⏻ 关机</button>
+    </div>
+    <p class="subtext warning" style="margin-top:8px">睡眠/重启/关机前请务必保存好工作，避免数据丢失。</p>
+  </div>
+  <div class="tool-group"><div class="sectiontitle" style="font-size:15px">内存优化</div><div class="subtext">温和整理当前用户部分普通应用的工作集</div>
+    <button class="action green" id="optimizeBtn2" style="width:100%;min-height:42px">⚡ 温和内存整理</button>
+    <div id="optimizeResult2" class="subtext" style="margin-top:8px">尚未执行优化</div>
+  </div>
+</div>
+
+<div class="panel" style="margin-top:12px"><div class="sectiontitle" style="font-size:15px">使用与安全说明</div><div class="subtext">手机和电脑需在同一可信热点/局域网中，且电脑端服务窗口保持运行。数据每约 2 秒刷新一次；系统操作均为固定白名单；结束进程受后端保护（系统核心进程会被拒绝）。</div><p class="subtext warning" style="margin-top:10px">安全提示：当前连接仍为局域网 HTTP，不要把端口映射到公网。仅在自己可信的私人热点或局域网内使用。</p></div>
+<div class="foot"><span>电脑伴侣 v5.3 · 完整工具集</span><span>快捷控制 / 剪贴板 / 通知 / 进程</span></div>
+</section>
+</main>
+<div class="pairback" id="pairback"><section class="pairbox"><h2>连接电脑伴侣</h2><p>在下方输入电脑显示的 8 位配对码。配对码 10 分钟内有效，只能成功使用一次。</p><div class="paircodewrap" id="paircodewrap" style="display:none;background:rgba(255,255,255,.05);border-radius:10px;padding:10px 14px;margin:6px 0;text-align:center"><div class="subtext" style="margin-bottom:4px">本机当前配对码（也可在服务窗口查看）</div><div id="paircodedisplay" style="font-size:30px;font-weight:800;letter-spacing:8px;font-family:monospace" data-code=""></div><div id="paircodetime" class="subtext" style="margin-top:4px"></div><div class="subtext" style="margin-top:10px">手机 App 扫码即可配对</div><img id="pairqr" alt="配对二维码" style="width:150px;height:150px;background:#fff;border-radius:8px;padding:6px;margin:8px auto 4px;display:none"></div><input id="paircode" inputmode="numeric" maxlength="8" placeholder="输入 8 位配对码" autocomplete="one-time-code"><div class="pairerror" id="pairerror"></div><button class="action green" id="pairbtn" style="width:100%">验证并配对此设备</button><p>只在自己的可信热点/局域网使用。当前局域网 HTTP 通信未加密，请勿映射到公网。</p></section></div><div class="modalback" id="modalback"><section class="modal"><h2 id="modalTitle">功能助手</h2><div id="modalBody"></div><div class="modalactions" id="modalActions"></div></section></div><div class="toast" id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);let lastStats=null;
+const TOKEN_KEY='pc_companion_device_token_v1';
+let deviceToken=localStorage.getItem(TOKEN_KEY)||'';
+function pairVisible(show){$('pairback').classList.toggle('hidden',!show)}
+function authHeaders(extra={}){return {...extra,'Authorization':'Bearer '+deviceToken}}
+async function apiFetch(url,options={}){const headers=authHeaders(options.headers||{});const r=await fetch(url,{...options,headers,cache:'no-store'});if(r.status===401){deviceToken='';localStorage.removeItem(TOKEN_KEY);pairVisible(true);throw Error('需要重新配对')}return r}
+$('pairbtn').onclick=async()=>{const code=$('paircode').value.trim();if(!/^\d{8}$/.test(code)){$('pairerror').textContent='请输入电脑窗口显示的 8 位数字配对码。';return} $('pairbtn').disabled=true;$('pairerror').textContent='正在验证…';try{const r=await fetch('/api/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code}),cache:'no-store'});const d=await r.json();if(!r.ok||!d.token)throw Error(d.message||'配对失败');deviceToken=d.token;localStorage.setItem(TOKEN_KEY,deviceToken);$('paircode').value='';$('pairerror').textContent='配对成功';pairVisible(false);toast('设备配对成功');refresh()}catch(e){$('pairerror').textContent=e.message||'配对失败，请检查配对码';}finally{$('pairbtn').disabled=false}};
+if(deviceToken)pairVisible(false);else pairVisible(true);
+async function loadPairCode(){
+  try{
+    const r=await fetch('/api/pair/qr',{cache:'no-store'});if(!r.ok)return;
+    const d=await r.json();
+    const wrap=$('paircodewrap'),dis=$('paircodedisplay'),tm=$('paircodetime'),qr=$('pairqr');
+    if(d.paired||!d.code||d.pair_consumed){wrap.style.display='none';return}
+    if(dis.dataset.code!==d.code){dis.dataset.code=d.code;dis.textContent=d.code}
+    wrap.style.display='';
+    if(d.png_b64){qr.src='data:image/png;base64,'+d.png_b64;qr.style.display='block'}else{qr.style.display='none'}
+    const m=Math.floor(d.expires_in/60),s=d.expires_in%60;
+    tm.textContent='剩余 '+m+' 分 '+String(s).padStart(2,'0')+' 秒';
+  }catch(e){}
+}
+if(!deviceToken){loadPairCode();setInterval(loadPairCode,5000)}
+function setBar(id,v){const e=$(id);e.style.width=Math.min(100,Math.max(0,v))+'%';e.classList.toggle('warn',v>=85)}
+function dur(s){const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?`${d}天 ${h}小时`:`${h}小时 ${m}分钟`}
+function localClock(){$('clock').textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false})}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2800)}
+function showModal(title,html,actions=[]){$('modalTitle').textContent=title;$('modalBody').innerHTML=html;$('modalActions').replaceChildren();for(const a of actions){const b=document.createElement('button');b.className='action '+(a.cls||'');b.textContent=a.label;b.onclick=()=>a.onClick();$('modalActions').appendChild(b)}const close=document.createElement('button');close.className='action';close.textContent='关闭';close.onclick=closeModal;$('modalActions').appendChild(close);$('modalback').classList.add('show')}
+function closeModal(){$('modalback').classList.remove('show')}$('modalback').addEventListener('click',e=>{if(e.target===$('modalback'))closeModal()});
+const cpuHistory=[],memHistory=[];
+function drawTrend(id,values){const el=$(id);if(!el||!values.length)return;const maxIndex=Math.max(values.length-1,1);const pts=values.map((v,i)=>`${(4+i*292/maxIndex).toFixed(1)},${(86-Math.max(0,Math.min(100,v))*0.76).toFixed(1)}`).join(' ');el.setAttribute('points',pts)}
+function updateTrend(d){cpuHistory.push(d.cpu);memHistory.push(d.mem_pct);if(cpuHistory.length>30)cpuHistory.shift();if(memHistory.length>30)memHistory.shift();drawTrend('cpuTrend',cpuHistory);drawTrend('memTrend',memHistory)}
+async function refresh(){try{const r=await apiFetch('/api/stats?t='+Date.now());if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();lastStats=d;updateTrend(d);
+$('cpu').textContent=d.cpu.toFixed(1);setBar('cpuBar',d.cpu);$('mem').textContent=d.mem_pct.toFixed(1);setBar('memBar',d.mem_pct);$('memDetail').textContent=`已用 ${d.mem_used} GB / 共 ${d.mem_total} GB · 可用 ${d.mem_available} GB`;$('memPagePct').textContent=d.mem_pct.toFixed(1);setBar('memPageBar',d.mem_pct);$('memPageAvail').textContent=d.mem_available.toFixed(1);$('memPageTotal').textContent=`总内存 ${d.mem_total} GB · 已用 ${d.mem_used} GB`;$('disk').textContent=d.disk_pct.toFixed(1);setBar('diskBar',d.disk_pct);$('diskDetail').textContent=`已用 ${d.disk_used} GB / 共 ${d.disk_total} GB`;$('rx').textContent=d.rx_mbps.toFixed(2);$('tx').textContent=d.tx_mbps.toFixed(2);$('uptime').textContent=dur(d.uptime);$('host').textContent=d.host+' · 电脑已连接';$('updated').textContent='更新于 '+d.time;$('status').textContent='● 在线';$('status').classList.remove('off');
+renderBattery(d.battery);
+const worst=Math.max(d.cpu,d.mem_pct,d.disk_pct);$('health').textContent=worst>=95?'负载很高':worst>=85?'负载偏高':'运行正常';$('healthDetail').textContent=d.mem_pct>=95?'内存占用很高，建议查看占用较大的程序':d.disk_pct>=95?'系统盘空间不足，建议清理不需要的文件':d.cpu>=95?'处理器持续高负载，建议检查运行中的程序':'各项指标暂时正常';setBar('healthBar',worst);
+try{const a=await apiFetch('/api/alerts?t='+Date.now());renderAlerts(await a.json())}catch(e){}
+}catch(e){$('status').textContent='● 连接中断';$('status').classList.add('off');$('health').textContent='暂时离线';$('healthDetail').textContent='请检查电脑服务窗口、热点和 Wi-Fi 连接。'}}
+
+function renderBattery(bat){
+  if(!bat||!bat.present){$('batCard').style.display='none';return}
+  $('batCard').style.display='';
+  const p=bat.percent==null?0:bat.percent;
+  $('batPct').innerHTML=p+'<span class="unit">%</span>';
+  $('batBar').style.width=Math.min(100,Math.max(0,p))+'%';
+  $('batBar').classList.toggle('warn',p<=20);
+  const status=bat.plugged?'(插电中)':(p<=20?'(电量低)':'(使用电池)');
+  const left=bat.mins_left?` · 约 ${bat.mins_left} 分钟`:'';
+  $('batDetail').textContent='电脑电池 '+status+left;
+  const chip=$('batCard').querySelector('.label');
+  chip.textContent=bat.plugged?'电脑电源状态（充电中）':'电脑电源状态';
+}
+function renderAlerts(d){
+  const box=$('alertbanner'),list=$('alertlist');
+  if(!d||!d.alerts||!d.alerts.length){box.style.display='none';return}
+  box.style.display='';
+  list.innerHTML=(d.alerts||[]).map(a=>`<div class="alertitem ${a.level==='critical'?'crit':''}">${escapeHtml(a.message)}</div>`).join('');
+}
+
+async function postAction(action){const r=await apiFetch('/api/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action})});return await r.json()}
+$('taskBtn').onclick=async()=>{try{const x=await postAction('task_manager');toast(x.message||'已发送操作')}catch(e){toast('无法连接电脑服务')}};
+$('settingsBtn').onclick=async()=>{try{const x=await postAction('windows_settings');toast(x.message||'已发送操作')}catch(e){toast('无法连接电脑服务')}};
+$('networkBtn').onclick=async()=>{showModal('网络设置',`<p>此操作会在电脑上打开 Windows 网络设置，方便检查当前 Wi-Fi、网络状态和连接问题。</p><p>如果监控页面断线，请确认电脑仍连接手机热点，并检查电脑服务窗口是否还在运行。</p>`,[{label:'打开电脑网络设置',cls:'cyan',onClick:async()=>{closeModal();try{const x=await postAction('network_settings');toast(x.message||'已发送操作')}catch(e){toast('无法连接电脑服务')}}}])};
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// 页面切换：同时控制 hidden、active 和 aria-selected，确保非当前页面完全隐藏
+function activatePage(pageName){
+  document.querySelectorAll('.tab').forEach(t=>{
+    const selected=t.dataset.page===pageName;
+    t.classList.toggle('active',selected);
+    t.setAttribute('aria-selected',selected?'true':'false');
+  });
+  document.querySelectorAll('.page').forEach(p=>{
+    const selected=p.id==='page-'+pageName;
+    p.hidden=!selected;
+    p.classList.toggle('active',selected);
+  });
+  if(pageName==='memory')loadProcesses();
+}
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>activatePage(tab.dataset.page)));
+activatePage('monitor');
+async function loadProcesses(){try{const r=await apiFetch('/api/processes?t='+Date.now());const d=await r.json();$('procRefreshTime').textContent='更新于 '+new Date().toLocaleTimeString('zh-CN',{hour12:false});
+const list=(d.processes||[]).map((p,i)=>{const pid=p.pid?`<span class="pmeta">PID ${p.pid}</span>`:'';return `<div class="proc-kill"><div class="pname" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</div><div style="display:flex;align-items:center;gap:0"><span class="pmeta">${p.memory_mb.toFixed(0)} MB</span><button class="killbtn" data-ppid="${p.pid??''}" data-pname="${escapeHtml(p.name)}">结束</button></div></div>`}).join('');
+$('processList').innerHTML=list||'没有可显示的进程';
+document.querySelectorAll('.killbtn').forEach(b=>b.onclick=()=>killProc(b.dataset.ppid,b.dataset.pname));
+}catch(e){$('processList').textContent='无法读取进程列表'}}
+async function killProc(pid,name){
+  if(!confirm(`确定要结束进程「${name}」吗？该操作不可恢复，未保存的数据可能丢失。`))return;
+  try{
+    const r=await apiFetch('/api/processes/kill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pid:pid?Number(pid):null,name,confirm:true})});
+    const d=await r.json();
+    toast(d.message||(d.ok?'进程已结束':'操作失败'));
+    if(d.ok)loadProcesses();else if(r.status===401)throw Error('auth');
+  }catch(e){if(e.message==='auth'){return}toast('无法连接电脑服务')}
+}
+$('procRefreshBtn').onclick=loadProcesses;
+async function runOptimize(btn,result){
+  if(!confirm('开始温和工作集整理？只处理当前用户部分普通应用，不会结束进程，但相关程序可能短暂卡顿。'))return;
+  const b=btn;b.disabled=true;b.textContent='正在整理…';result.textContent='正在筛选当前用户的普通应用并尝试整理工作集…';
+  try{const d=await postAction('memory_optimize');if(!d.ok)throw Error(d.message||'操作失败');result.innerHTML=`<strong>操作已完成</strong><br>整理成功：${d.trimmed_processes} 个；跳过/无法访问：${d.skipped_processes} 个。<br>可用内存：${d.available_before_gb} GB → ${d.available_after_gb} GB（变化 ${d.available_delta_gb>=0?'+':''}${d.available_delta_gb} GB）。<br><span class="warning">${escapeHtml(d.warning||'不保证提升性能。')}</span>`;toast('内存整理操作完成');refresh()}
+  catch(e){result.textContent='操作失败：'+e.message}finally{b.disabled=false;b.textContent='⚡ 温和内存整理'}
+}
+$('optimizeBtn').onclick=()=>runOptimize($('optimizeBtn'),$('optimizeResult'));
+$('optimizeBtn2').onclick=()=>runOptimize($('optimizeBtn2'),$('optimizeResult2'));
+
+// 系统面板 / 屏幕电源 / 电源安全 白名单动作（部分需二次确认）
+const TWO_STEP={system_sleep:'将让电脑进入睡眠状态',system_restart:'将重启电脑',system_shutdown:'将关闭电脑'};
+document.querySelectorAll('[data-action]').forEach(btn=>{
+  btn.onclick=async()=>{
+    const a=btn.dataset.action;
+    const needsConfirm=TWO_STEP[a]!=null;
+    if(needsConfirm&&!confirm(`确定要${TWO_STEP[a]}吗？该操作不可撤销，请先保存好工作。`))return;
+    try{const r=await apiFetch('/api/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:a,confirm:needsConfirm})});const x=await r.json();toast(x.message||'已发送操作')}catch(e){toast('无法连接电脑服务')}
+  };
+});
+$('lockBtn').onclick=async()=>{if(!confirm('确定要锁定电脑屏幕吗？解锁需要 Windows 账户密码或 PIN。'))return;try{const x=await postAction('lock_screen');toast(x.message||'已锁定电脑')}catch(e){toast('无法连接电脑服务')}};
+
+// 媒体控制
+document.querySelectorAll('[data-media]').forEach(btn=>{
+  btn.onclick=async()=>{try{const x=await postAction('media_'+btn.dataset.media);toast(x.message||'已发送媒体操作')}catch(e){toast('无法连接电脑服务')}};
+});
+
+// 音量控制
+async function loadVolume(){
+  try{const r=await apiFetch('/api/volume?t='+Date.now());const d=await r.json();const v=d.volume;if(!v||!v.ok)return;
+  $('volRange').value=v.volume_pct; $('volPct').textContent=v.volume_pct+'%';
+  $('volStatus').textContent=v.muted?'当前音量（已静音）':'当前音量';
+  }catch(e){}
+}
+document.querySelectorAll('[data-volume]').forEach(btn=>{
+  btn.onclick=async()=>{try{const x=await postAction('volume_'+btn.dataset.volume);toast(x.message||'已调整音量');setTimeout(loadVolume,600)}catch(e){toast('无法连接电脑服务')}};
+});
+let volDragging=false;
+$('volRange').addEventListener('input',function(){volDragging=true;$('volPct').textContent=this.value+'%'});
+$('volRange').addEventListener('change',async function(){const lvl=parseInt(this.value,10);try{const r=await apiFetch('/api/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'volume_set',level:lvl})});const d=await r.json();toast(d.message||'音量已设置');setTimeout(loadVolume,600)}catch(e){toast('无法连接电脑服务')}finally{volDragging=false}});
+
+// 剪贴板
+$('clipReadBtn').onclick=async()=>{try{const r=await apiFetch('/api/clipboard?t='+Date.now());const d=await r.json();if(d.ok&&d.text){$('clipText').value=d.text;toast('已读取电脑剪贴板')}else{toast(d.message||'剪贴板为空或无法读取')}}catch(e){toast('无法连接电脑服务')}};
+$('clipWriteBtn').onclick=async()=>{const txt=$('clipText').value;if(!txt.trim()){toast('请先输入要写入的内容');return}try{const r=await apiFetch('/api/clipboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:txt})});const d=await r.json();toast(d.message||'已写入电脑剪贴板')}catch(e){toast('无法连接电脑服务')}};
+
+// 推送通知
+$('notifyBtn').onclick=async()=>{const title=$('notifyTitle').value.trim()||'电脑伴侣';const msg=$('notifyMsg').value.trim();if(!msg){toast('请输入通知内容');return}try{const r=await apiFetch('/api/notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,message:msg})});const d=await r.json();toast(d.message||'已发送通知');if(d.ok){$('notifyMsg').value=''}}catch(e){toast('无法连接电脑服务')}};
+
+localClock();setInterval(localClock,1000);refresh();setInterval(refresh,2000);setTimeout(loadVolume,300);
+$('fullscreen').addEventListener('click',async()=>{try{if(!document.fullscreenElement){await document.documentElement.requestFullscreen()}else{await document.exitFullscreen()}}catch(e){$('mode').textContent='请使用浏览器菜单进入全屏'}});
+if('wakeLock' in navigator){let lock;const keepAwake=async()=>{try{lock=await navigator.wakeLock.request('screen')}catch(e){}};document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')keepAwake()});keepAwake()}
+</script></body></html>

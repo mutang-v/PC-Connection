@@ -1,0 +1,33 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.pccompanion.assistant'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.pccompanion.assistant"
+        minSdk 24          // 覆盖 Android 7+，P9 是 Android 8 (API 26)
+        targetSdk 26       // 保持与 P9 系统匹配，避免高版本 targetSdk 兼容限制
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // ZXing core：轻量纯 Java 二维码解码器，用于"扫码配对"，无需 Google Play Services
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
