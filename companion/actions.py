@@ -40,13 +40,11 @@ def set_volume(level: int = None, delta: int = None) -> tuple:
     统一返回 (dict, status_code)，与 http_api 的 volume_set 分支保持解包一致。"""
     if level is not None:
         level = max(0, min(100, int(level)))
-        current = media.read_volume().get("volume_pct") or 0
-        delta = level - current
-        media.clamp_volume(delta)
-        return {"ok": True, "message": f"音量已设为 {level}%", "volume": media.read_volume()}, 200
+        vol = media.set_volume_absolute(level)
+        return {"ok": True, "message": f"音量已设为 {level}%", "volume": vol}, 200
     if delta is not None:
-        new = media.clamp_volume(int(delta))
-        return {"ok": True, "message": f"音量已调整，当前约 {new}%", "volume": media.read_volume()}, 200
+        vol = media.change_volume(int(delta))
+        return {"ok": True, "message": f"音量已调整，当前 {vol.get('volume_pct')}%", "volume": vol}, 200
     return {"ok": False, "message": "缺少音量参数"}, 400
 
 def perform_action(action: str, confirm: bool = False):
@@ -93,22 +91,31 @@ def perform_action(action: str, confirm: bool = False):
             ctypes.windll.user32.LockWorkStation()
             return {"ok": True, "message": "电脑已锁定"}, 200
         if action in {
-            "media_play_pause", "media_next", "media_prev",
             "volume_up", "volume_down", "volume_mute",
+        }:
+            if action == "volume_up":
+                vol = media.change_volume(5)
+                msg = f"音量增大，当前 {vol.get('volume_pct')}%"
+            elif action == "volume_down":
+                vol = media.change_volume(-5)
+                msg = f"音量减小，当前 {vol.get('volume_pct')}%"
+            else:  # volume_mute
+                vol = media.toggle_mute()
+                state = "静音" if vol.get("muted") else "取消静音"
+                msg = f"已{state}，当前 {vol.get('volume_pct')}%"
+            return {"ok": True, "message": msg, "volume": vol}, 200
+        if action in {
+            "media_play_pause", "media_next", "media_prev",
         }:
             _MEDIA_VK = {
                 "media_play_pause": media.VK_MEDIA_PLAY_PAUSE,
                 "media_next": media.VK_MEDIA_NEXT_TRACK,
                 "media_prev": media.VK_MEDIA_PREV_TRACK,
-                "volume_up": media.VK_VOLUME_UP,
-                "volume_down": media.VK_VOLUME_DOWN,
-                "volume_mute": media.VK_VOLUME_MUTE,
             }
             media._send_media_key(_MEDIA_VK[action])
             labels = {
                 "media_play_pause": "播放/暂停", "media_next": "下一首",
-                "media_prev": "上一首", "volume_up": "音量增大",
-                "volume_down": "音量减小", "volume_mute": "静音切换",
+                "media_prev": "上一首",
             }
             return {"ok": True, "message": f"已发送：{labels[action]}"}, 200
         if action == "system_sleep":

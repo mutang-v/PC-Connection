@@ -4,3 +4,5 @@ psutil>=5.9,<8
 qrcode>=7.4,<9
 Pillow>=9.0,<12
 pystray>=0.19,<1
+comtypes>=1.2
+pycaw>=20240210

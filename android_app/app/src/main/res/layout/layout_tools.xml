@@ -526,5 +526,25 @@
             android:lineSpacingExtra="2dp"
             android:paddingTop="18dp" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="连接管理"
+            android:textColor="@color/text_primary"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:paddingTop="18dp"
+            android:paddingBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnReconnect"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:background="@drawable/btn_action"
+            android:text="重新连接 / 重新配对"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:stateListAnimator="@null" />
+
     </LinearLayout>
 </ScrollView>

@@ -152,6 +152,8 @@ public class MainActivity extends Activity {
         toolsView.findViewById(R.id.btnClipWrite).setOnClickListener(v -> writeClipboard());
         // 工具页：通知
         toolsView.findViewById(R.id.btnNotify).setOnClickListener(v -> sendNotify());
+        // 工具页：重新连接 / 重新配对
+        toolsView.findViewById(R.id.btnReconnect).setOnClickListener(v -> doReconnect());
 
         if (token.isEmpty()) {
             showPage("pair");
@@ -287,6 +289,14 @@ public class MainActivity extends Activity {
                 ui.post(() -> tvPairErr.setText("无法连接：".concat(String.valueOf(e.getMessage()))));
             }
         });
+    }
+
+    private void doReconnect() {
+        // 清除本地保存的连接信息，回到配对页重新连接
+        prefs.edit().remove(KEY_HOST).remove(KEY_TOKEN).apply();
+        host = "";
+        token = "";
+        ui.post(() -> { showPage("pair"); toast("已清除连接，请重新配对"); });
     }
 
     private void refreshStats() {

@@ -18,8 +18,8 @@ android {
         minSdk 24          // 覆盖 Android 7+，P9 是 Android 8 (API 26)
         targetSdk 34       // 上架各商店（应用宝/华为/酷安/Google Play）的当前必需 targetSdk；
                            // 对 P9(API26) 无运行时影响，仅决定高版本系统上的兼容行为
-        versionCode 2
-        versionName "1.1.0"
+        versionCode 3
+        versionName "1.2.0"
     }
 
     signingConfigs {
