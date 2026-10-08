@@ -1,52 +1,73 @@
-# PC Connection 电脑伴侣
+<div align="center">
 
-让手机远程监控和控制你的 Windows 电脑的轻量级工具。电脑端运行一个 Python 后端服务，手机通过 **配对码 / 扫码** 安全连接后，即可在局域网内随时随地查看电脑状态并执行控制操作。
+# 🖥️ PC Connection 电脑伴侣
 
-- **后端**：Python 标准库 + psutil，零框架
+**让手机成为你 Windows 电脑的随身遥控器**
+
+在同一个局域网 / 热点里，用手机随时随地查看电脑状态、控制电脑操作。
+电脑端跑一个轻量 Python 服务，手机通过 **配对码 / 扫码** 安全连接，即刻开始。
+
+[![平台](https://img.shields.io/badge/平台-Windows-blue)](#)
+[![语言](https://img.shields.io/badge/语言-Python%20%2B%20Android-yellow)](#)
+[![最新版本](https://img.shields.io/github/v/release/mutang-v/PC-Connection)](https://github.com/mutang-v/PC-Connection/releases)
+[![许可证](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+</div>
+
+---
+
+## 💡 这是什么？
+
+一个**免费、开源、轻量**的手机 ↔ 电脑远程协同工具：
+
+- **后端**：Python 标准库 + psutil，零框架，极轻
 - **手机端**：原生 Android App 或 网页控制台
-- **在线概览**：任一支持浏览器的设备（含 Android / iOS）访问网页控制台即可使用
+- **使用前提**：手机与电脑处于**同一局域网 / 热点**
 
-![License](https://img.shields.io/badge/license-MIT-green)
+> 适合："人在沙发 / 床上，懒得起身"时，用手机看电脑状态、调音量、开面板、看进程、传文件。
 
 ---
 
 ## ✨ 功能总览
 
 ### 📊 电脑监控
+一台随时可查的"电脑状态面板"：
 - CPU / 内存 / 系统盘使用率、网络上下行实时速率、开机时长
 - 各磁盘分区占用
 - 电脑电池状态（百分比、是否充电、预计剩余时长）
 - CPU / 内存近期趋势曲线
 
 ### 🎮 电脑控制
+一键直达常用系统操作：
 - 快速打开 Windows 系统面板：任务管理器、网络 / 蓝牙 / 显示 / 声音 / 相机 / 电源设置、Windows 设置
 - 显示桌面、锁定屏幕
 - 内存工作集整理（安全版：只回收当前用户普通应用的工作集，绝不结束进程）
 
 ### 🎵 媒体 & 音量
+把手机变成电脑的遥控器：
 - 播放 / 暂停、上一首、下一首
-- 音量增减 / 静音 / 拖动滑块精确设置（0–100%）
+- 音量增减 / 静音 / 拖动滑块**精确设置**（0–100%）
 
 ### 🔌 进程管理
 - 查看内存 / CPU 占用最高的进程
 - **二次确认**后可结束特定进程（内置系统关键进程白名单保护）
 
 ### 📋 剪贴板互通
-- 从手机读取电脑剪贴板、写入内容到电脑剪贴板
+- 从手机读取电脑剪贴板、写入内容到电脑剪贴板，跨设备复制粘贴
 
 ### 📁 文件互传
-- 手机 ↔ 电脑双向传输文件（默认单文件 ≤ 20MB）
+- 手机 ↔ 电脑**双向**传输文件（默认单文件 ≤ 20MB）
 - 手机上传的文件保存到电脑端项目的 `share/` 目录
 
 ### 🔔 电脑推送通知
-- 从手机发送系统通知（Toast）到电脑桌面
+- 从手机发送**系统通知**到电脑桌面
 
 ### 🚨 智能告警
-- CPU 尖峰 / 高位、内存偏高、系统盘不足、低电量（未充电）、CPU 持续高位 等自动告警，实时推送到手机
+- CPU 尖峰 / 高位、内存偏高、系统盘不足、低电量（未充电）、CPU 持续高位 等自动告警，**实时推送到手机**
 
 ### 🤝 安全的设备配对
 - 8 位一次性配对码（10 分钟有效，最多 5 次错误尝试）
-- 桌面二维码扫码直连（Android App）
+- 桌面二维码**扫码直连**（Android App）
 - 设备凭证仅存 SHA-256 摘要，不存储原始令牌
 
 ---
@@ -72,8 +93,9 @@ PCCompanion_App/
 │   ├── auth.py                # 配对码 / Bearer Token 认证
 │   ├── metrics.py             # 硬件监控只读指标 + 告警
 │   ├── actions.py             # Windows 控制动作白名单
-│   ├── media.py               # 媒体 & 音量控制（SendInput）
+│   ├── media.py               # 媒体 & 音量控制
 │   ├── system_tools.py        # 剪贴板 / 通知 / 结束进程
+│   ├── filetransfer.py        # 文件互传
 │   ├── qr_text.py             # 终端二维码渲染
 │   └── p9_controller.py       # （可选扩展）adb 桥接安卓设备
 ├── web/
@@ -89,8 +111,8 @@ PCCompanion_App/
 ## 🚀 快速开始（电脑端）
 
 ### 环境要求
-- Windows 7+（控制功能依赖 Windows API）
-- Python 3.9+
+- **Windows 7+**（控制功能依赖 Windows API）
+- **Python 3.9+**
 
 ### 安装 & 启动
 
@@ -102,16 +124,16 @@ pip install -r requirements.txt
 python server.py
 ```
 
-或者直接双击 `start_companion.bat`（会先装依赖再启动）。
+或者直接双击 `start_companion.bat`（会自动装依赖再启动）。
 
-启动后终端会显示：
+启动后会看到：
 - 本机 / 手机访问地址
 - **当前配对码**（8 位数字，10 分钟内有效，过期自动刷新）
 - 一个可被手机扫码的二维码
 
 > 首次运行会在项目目录生成 `data/device_token.json`（只存令牌哈希）。**请勿公开分享此文件。**
 
-### 防火墙提示
+### 🔥 防火墙提示
 Windows 防火墙可能拦截入站连接。请放行 Python，并**仅允许"专用网络"**。
 
 ---
@@ -122,7 +144,7 @@ Windows 防火墙可能拦截入站连接。请放行 Python，并**仅允许"�
 手机连接**与电脑相同的局域网 / 热点**，用浏览器打开终端里显示的 `http://电脑IP:8000`，输入配对码即可。
 
 ### 方式二：Android App
-1. 克隆本项目，用 Android Studio 打开 `android_app/` 目录构建 APK（或用 `gradle assembleDebug`）
+1. 克隆本项目，用 Android Studio 打开 `android_app/` 目录构建 APK（或 `gradle assembleDebug`）
 2. 在手机上安装 APK
 3. 打开 App，扫描电脑终端里的二维码，或手动输入电脑 IP 和配对码
 4. 配对成功后即可使用
