@@ -6,3 +6,5 @@ Pillow>=9.0,<12
 pystray>=0.19,<1
 comtypes>=1.2
 pycaw>=20240210
+pyperclip>=1.8
+winotify>=1.0

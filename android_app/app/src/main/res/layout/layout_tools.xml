@@ -359,6 +359,80 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="文件互传"
+            android:textColor="@color/text_primary"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:paddingTop="18dp"
+            android:paddingBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/panel_bg"
+            android:padding="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="文件保存在电脑的 share 文件夹。可双向互传（单文件 ≤20MB）。"
+                android:textColor="@color/text_muted"
+                android:textSize="11sp"
+                android:lineSpacingExtra="2dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <Button
+                    android:id="@+id/btnFileUpload"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/btn_green"
+                    android:text="上传文件到电脑"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:stateListAnimator="@null" />
+
+                <Button
+                    android:id="@+id/btnFileRefresh"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/btn_primary"
+                    android:text="刷新电脑文件"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:stateListAnimator="@null" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvFileTransferStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="点击「刷新」查看电脑 share 文件夹里的文件"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                android:paddingTop="10dp" />
+
+            <LinearLayout
+                android:id="@+id/fileList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="vertical" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="电脑推送通知"
             android:textColor="@color/text_primary"
             android:textSize="17sp"

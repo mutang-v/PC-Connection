@@ -11,6 +11,7 @@ from .metrics import MetricsCollector
 from .auth import AuthManager
 from .p9_controller import P9Controller
 from .system_tools import read_clipboard, write_clipboard, kill_process, notify
+from .filetransfer import list_files, upload_base64, download_file
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -141,14 +142,37 @@ class CompanionHandler(SimpleHTTPRequestHandler):
                     return self._json(self.p9.status())
                 except Exception as exc:  # noqa: BLE001
                     return self._json({"ok": False, "message": f"读取 P9 状态失败：{exc}"}, 500)
+            if route == "/api/file/list":
+                return self._json(list_files())
+            if route.startswith("/api/file/download"):
+                from urllib.parse import parse_qs, urlparse
+                qs = parse_qs(urlparse(self.path).query)
+                name = (qs.get("name") or [""])[0]
+                try:
+                    res = download_file(name)
+                    if res is None:
+                        return self._json({"ok": False, "message": "文件不存在"}, 404)
+                    data, fname = res
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/octet-stream")
+                    self.send_header("Content-Length", str(len(data)))
+                    from urllib.parse import quote
+                    self.send_header("Content-Disposition", f"attachment; filename*=UTF-8''{quote(fname)}")
+                    self.end_headers()
+                    self.wfile.write(data)
+                    return
+                except Exception as exc:  # noqa: BLE001
+                    return self._json({"ok": False, "message": f"下载失败：{exc}"}, 500)
             return self._json({"ok": False, "message": "不支持的接口"}, 404)
         return super().do_GET()
 
     def do_POST(self):
         route = self.path.split("?", 1)[0]
+        # 文件上传允许较大的 body（20MB 文件 base64 后约 27MB）
+        max_len = 30 * 1024 * 1024 if route == "/api/file/upload" else 2048
         try:
             length = int(self.headers.get("Content-Length", "0"))
-            if length < 1 or length > 2048:
+            if length < 1 or length > max_len:
                 return self._json({"ok": False, "message": "请求内容无效"}, 400)
             payload = json.loads(self.rfile.read(length).decode("utf-8"))
             if not isinstance(payload, dict):
@@ -162,6 +186,11 @@ class CompanionHandler(SimpleHTTPRequestHandler):
             if token:
                 response["token"] = token
             return self._json(response, status)
+
+        if route == "/api/file/upload":
+            if not self._authorized():
+                return self._json({"ok": False, "error": "auth_required", "message": "请先配对可信设备。"}, 401)
+            return self._json(upload_base64(payload.get("files")))
 
         if route.startswith("/api/") and not self._authorized():
             return self._json({"ok": False, "error": "auth_required", "message": "请先配对可信设备。"}, 401)

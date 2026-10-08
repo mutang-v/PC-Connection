@@ -2,13 +2,16 @@ package com.pccompanion.assistant;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
@@ -28,12 +31,19 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -154,6 +164,9 @@ public class MainActivity extends Activity {
         toolsView.findViewById(R.id.btnNotify).setOnClickListener(v -> sendNotify());
         // 工具页：重新连接 / 重新配对
         toolsView.findViewById(R.id.btnReconnect).setOnClickListener(v -> doReconnect());
+        // 工具页：文件互传
+        toolsView.findViewById(R.id.btnFileUpload).setOnClickListener(v -> pickFileToUpload());
+        toolsView.findViewById(R.id.btnFileRefresh).setOnClickListener(v -> refreshFileList());
 
         if (token.isEmpty()) {
             showPage("pair");
@@ -259,6 +272,9 @@ public class MainActivity extends Activity {
             etHost.setText(hostPart);
             etCode.setText(codePart);
             doPair(); // 自动触发配对
+        } else if (requestCode == REQ_FILE_UPLOAD && resultCode == RESULT_OK && data != null) {
+            Uri uri = data.getData();
+            if (uri != null) uploadFile(uri);
         }
     }
 
@@ -745,6 +761,7 @@ public class MainActivity extends Activity {
             }
         });
         loadVolume();
+        refreshFileList();
     }
 
     // ============ 媒体 & 音量 ============
@@ -878,10 +895,182 @@ public class MainActivity extends Activity {
         });
     }
 
+    // ============ 文件互传 ============
+
+    private void pickFileToUpload() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        try {
+            startActivityForResult(Intent.createChooser(intent, "选择要上传到电脑的文件"), REQ_FILE_UPLOAD);
+        } catch (Exception e) {
+            toast("无法打开文件选择器：" + e.getMessage());
+        }
+    }
+
+    private void uploadFile(Uri uri) {
+        try {
+            ContentResolver cr = getContentResolver();
+            long size = -1;
+            android.database.Cursor c = cr.query(uri, null, null, null, null);
+            if (c != null && c.moveToFirst()) {
+                int idx = c.getColumnIndex(android.provider.OpenableColumns.SIZE);
+                int nIdx = c.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                if (idx >= 0) size = c.getLong(idx);
+                if (nIdx >= 0) {
+                    String dn = c.getString(nIdx);
+                    if (dn != null && !dn.isEmpty()) curFileName = dn;
+                }
+                c.close();
+            }
+            if (size > 20 * 1024 * 1024) {
+                toast("单个文件超过 20MB，无法上传");
+                return;
+            }
+            final String name = (curFileName == null || curFileName.isEmpty()) ? ("file_" + System.currentTimeMillis() + ".bin") : curFileName;
+            curFileName = null;
+            toast("正在上传「" + name + "」…");
+            io.execute(() -> {
+                try {
+                    InputStream is = getContentResolver().openInputStream(uri);
+                    if (is == null) throw new Exception("无法读取所选文件");
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = is.read(buf)) != -1) bos.write(buf, 0, n);
+                    is.close();
+                    byte[] raw = bos.toByteArray();
+                    String b64 = Base64.encodeToString(raw, Base64.NO_WRAP);
+                    String payload = "{\"files\":[{\"name\":" + JSONObject.quote(name)
+                            + ",\"b64\":\"" + b64 + "\"}]}";
+                    JSONObject d = apiPost("/api/file/upload", payload, true);
+                    ui.post(() -> {
+                        toast(d.optBoolean("ok", false) ? d.optString("message", "上传成功") : "上传失败：" + d.optString("message", ""));
+                        refreshFileList();
+                    });
+                } catch (Exception e) {
+                    ui.post(() -> toast("上传失败：" + (e.getMessage() == null ? "无法连接" : e.getMessage())));
+                }
+            });
+        } catch (Exception e) {
+            toast("上传准备失败：" + e.getMessage());
+        }
+    }
+
+    private String curFileName = null;
+
+    private void refreshFileList() {
+        setText(toolsView, R.id.tvFileTransferStatus, "正在读取电脑 share 文件夹…");
+        io.execute(() -> {
+            try {
+                JSONObject d = apiGet("/api/file/list");
+                ui.post(() -> renderFileList(d));
+            } catch (Exception e) {
+                ui.post(() -> setText(toolsView, R.id.tvFileTransferStatus, "读取失败：无法连接电脑服务"));
+            }
+        });
+    }
+
+    private void renderFileList(JSONObject d) {
+        LinearLayout container = toolsView.findViewById(R.id.fileList);
+        if (container == null) return;
+        container.removeAllViews();
+        TextView status = toolsView.findViewById(R.id.tvFileTransferStatus);
+        if (!d.optBoolean("ok", false)) {
+            if (status != null) status.setText("读取失败：" + d.optString("message", ""));
+            return;
+        }
+        JSONArray files = d.optJSONArray("files");
+        if (files == null || files.length() == 0) {
+            if (status != null) status.setText("电脑 share 文件夹为空，点「上传」把手机文件发到电脑");
+            return;
+        }
+        if (status != null) status.setText("电脑 share 文件夹共 " + files.length() + " 个文件（点条目下载到手机）：");
+        for (int i = 0; i < files.length(); i++) {
+            final JSONObject f = files.optJSONObject(i);
+            if (f == null) continue;
+            final String fname = f.optString("name", "");
+            long sz = f.optLong("size", 0);
+            String sizeStr = fmtSize(sz);
+            String mtime = f.optString("mtime_str", "");
+            TextView row = new TextView(this);
+            row.setText(fname + "\n" + sizeStr + "\t" + mtime);
+            row.setTextColor(color(R.color.text_primary));
+            row.setTextSize(13);
+            row.setPadding(dp(8), dp(8), dp(8), dp(8));
+            row.setBackgroundResource(R.drawable.edit_bg);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.bottomMargin = dp(6);
+            row.setOnClickListener(v -> downloadFile(fname));
+            container.addView(row, lp);
+        }
+    }
+
+    private String fmtSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return String.format(Locale.CHINA, "%.1f KB", bytes / 1024.0);
+        if (bytes < 1024L * 1024 * 1024) return String.format(Locale.CHINA, "%.1f MB", bytes / 1024.0 / 1024.0);
+        return String.format(Locale.CHINA, "%.1f GB", bytes / 1024.0 / 1024.0 / 1024.0);
+    }
+
+    private void downloadFile(String name) {
+        toast("正在从电脑下载「" + name + "」…");
+        io.execute(() -> {
+            String url;
+            try {
+                url = "http://" + hostPort() + "/api/file/download?name="
+                        + java.net.URLEncoder.encode(name, "UTF-8");
+            } catch (Exception e) {
+                ui.post(() -> toast("文件名编码失败"));
+                return;
+            }
+            try {
+                HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(4000);
+                conn.setReadTimeout(20000);
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+                conn.setRequestProperty("Cache-Control", "no-store");
+                int code = conn.getResponseCode();
+                if (code == 401) {
+                    conn.disconnect();
+                    ui.post(() -> { token = ""; prefs.edit().remove(KEY_TOKEN).apply(); showPage("pair"); });
+                    return;
+                }
+                InputStream is = conn.getInputStream();
+                File baseDir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                if (baseDir == null) {
+                    is.close();
+                    conn.disconnect();
+                    ui.post(() -> toast("外部存储不可用，无法保存"));
+                    return;
+                }
+                File dir = new File(baseDir, "");
+                if (!dir.exists()) dir.mkdirs();
+                File outFile = new File(dir, name);
+                FileOutputStream fos = new FileOutputStream(outFile);
+                byte[] buf = new byte[8192];
+                int n;
+                long total = 0;
+                while ((n = is.read(buf)) != -1) { fos.write(buf, 0, n); total += n; }
+                fos.close();
+                is.close();
+                conn.disconnect();
+                final String path = outFile.getAbsolutePath();
+                final long sz = total;
+                ui.post(() -> toast("已下载「" + name + "」（" + fmtSize(sz) + "）\n" + path));
+            } catch (Exception e) {
+                ui.post(() -> toast("下载失败：" + (e.getMessage() == null ? "无法连接" : e.getMessage())));
+            }
+        });
+    }
+
     // ============ HTTP ============
 
     private static final int PORT = 8000;
     private static final int REQ_SCAN = 200;
+    private static final int REQ_FILE_UPLOAD = 201;
 
     private String hostPort() {
         if (host.contains(":")) {

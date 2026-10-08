@@ -34,3 +34,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# ===== 文件互传运行时目录（勿提交） =====
+share/

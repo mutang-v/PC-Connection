@@ -59,21 +59,32 @@ def write_clipboard(text: str) -> dict:
             return {"ok": True, "message": "已写入电脑剪贴板", "length": len(text)}
         except Exception:  # noqa: BLE001
             pass
-    # 回退：CF_UNICODETEXT Win32 写入
+    # 回退：CF_UNICODETEXT Win32 写入（修复 64 位指针被截断导致的 access violation）
     try:
         CF_UNICODETEXT = 13
         GMEM_MOVEABLE = 0x0002
         kernel32 = ctypes.windll.kernel32
+        kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
+        kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
+        kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
+        kernel32.GlobalLock.restype = wintypes.LPVOID
         if not USER32.OpenClipboard(0):
             return {"ok": False, "message": "无法打开剪贴板"}, 500
         try:
             USER32.EmptyClipboard()
             data = text.encode("utf-16-le") + b"\x00\x00"
             h = kernel32.GlobalAlloc(GMEM_MOVEABLE, len(data))
+            if not h:
+                return {"ok": False, "message": "分配剪贴板内存失败"}, 500
             ptr = kernel32.GlobalLock(h)
-            ctypes.memmove(ptr, data, len(data))
-            kernel32.GlobalUnlock(h)
-            USER32.SetClipboardData(CF_UNICODETEXT, h)
+            if not ptr:
+                return {"ok": False, "message": "锁定剪贴板内存失败"}, 500
+            try:
+                ctypes.memmove(ptr, data, len(data))
+            finally:
+                kernel32.GlobalUnlock(h)
+            if not USER32.SetClipboardData(CF_UNICODETEXT, h):
+                return {"ok": False, "message": "设置剪贴板数据失败"}, 500
         finally:
             USER32.CloseClipboard()
         return {"ok": True, "message": "已写入电脑剪贴板", "length": len(text)}
@@ -83,13 +94,30 @@ def write_clipboard(text: str) -> dict:
 
 # ---------------- 桌面通知 ----------------
 def notify(title: str, message: str = "") -> dict:
-    """在 Windows 桌面弹出通知气泡（Toast）。
+    """在 Windows 桌面弹出通知（Toast）。
 
-    优先用 powershell + Windows.UI.Notifications，若失败退回简单的弹出 MessageBox。
-    为避免阻塞主流程，用系统命令异步触发。
+    优先使用 winotify（标准 Windows 通知中心机制，跨版本可靠），
+    若未安装则回退到 PowerShell + Windows.UI.Notifications。
+    均为异步触发，不阻塞主流程。
     """
     title = (title or "电脑伴侣")[:64]
     message = (message or "")[:256]
+
+    # 方案一：winotify（推荐）
+    try:
+        from winotify import Notification
+        n = Notification(
+            app_id="电脑伴侣",
+            title=title,
+            msg=message,
+            duration="short",
+        )
+        n.show()
+        return {"ok": True, "message": "已向电脑桌面发送通知"}
+    except Exception:  # noqa: BLE001
+        pass
+
+    # 方案二：PowerShell Windows.UI.Notifications Toast
     ps = (
         "$e=[Windows.UI.Notifications.ToastNotificationManager,Windows.UI.Notifications,ContentType=WindowsRuntime];"
         "$t=[Windows.Data.Xml.Dom.XmlDocument,Windows.Data.Xml.Dom.XmlDocument,ContentType=WindowsRuntime];"
